@@ -12,11 +12,13 @@ class AppConfig(TypedDict):
     DomainId: str
     UserProfileName: str
     AppType: Union[
-        "JupyterServer",
-        "KernelGateway",
+        "JupyterLab",
+        "CodeEditor",
+        "DetailedProfiler",
         "TensorBoard",
         "RStudioServerPro",
         "RSessionGateway",
+        "Canvas",
     ]
     AppName: str
     Status: Union["Deleted", "Deleting", "Failed", "InService", "Pending"]
@@ -34,15 +36,16 @@ def delete_studio_apps(list_response: ListResponse) -> List[AppConfig]:
         try:
             if app_config.get("Status") != "InService":
                 continue
+            logger.info({"status": "deleting studio app"})
             delete_response = sm_client.delete_app(
                 DomainId=app_config["DomainId"],
                 UserProfileName=app_config["UserProfileName"],
                 AppName=app_config["AppName"],
                 AppType=app_config["AppType"],
             )
-            logger.info(delete_response)
-        except:
-            logger.exception("failed to delete studio app")
+            logger.info({"status": "deleted studio app", "response": delete_response})
+        except Exception as e:
+            logger.exception({"status": "failed to delete studio app", "exception": e})
             failed_apps.append(app_config)
     return failed_apps
 
@@ -56,13 +59,13 @@ def on_create():
         result (json): status
     """
 
-    logger.info("create resource not implemented")
+    logger.info({"status": "create resource not needed for studio app custom resource"})
 
     return {"Status": "SUCCESS"}
 
 
 def is_create_complete():
-    logger.info("calling is_create_complete")
+    logger.info({"status": "calling is_create_complete"})
     return {"IsComplete": True}
 
 
@@ -75,13 +78,13 @@ def on_update():
         result (json): status
     """
 
-    logger.info("update resource not implemented")
+    logger.info({"status": "update resource not needed for studio app custom resource"})
 
     return {"Status": "SUCCESS"}
 
 
 def is_update_complete():
-    logger.info("calling is_update_complete")
+    logger.info({"status": "calling is_update_complete"})
     return {"IsComplete": True}
 
 
@@ -95,14 +98,15 @@ def on_delete(user_profile_name: str, physical_resource_id: str):
     Returns:
         result (json): status and physical resource id
     """
-    logger.info("delete resource")
+
+    logger.info({"status": "deleting resource"})
     try:
         list_response: ListResponse = sm_client.list_apps(
             UserProfileNameEquals=user_profile_name
         )
-        logger.info(list_response)
-    except:
-        logger.exception("failed to list studio apps")
+        logger.info({"status": "listed studio apps", "response": list_response})
+    except Exception as e:
+        logger.exception({"status": "failed to delete studio app", "exception": e})
         return {
             "Status": "FAILED",
             "PhysicalResourceId": physical_resource_id,
@@ -121,30 +125,36 @@ def on_delete(user_profile_name: str, physical_resource_id: str):
 
 
 def is_delete_complete(user_profile_name: str, domain_id: str):
-    logger.info("calling is_delete_complete")
+    logger.info({"status": "calling is_delete_complete"})
     try:
         list_response: ListResponse = sm_client.list_apps(
             UserProfileNameEquals=user_profile_name
         )
-        logger.info(list_response)
+        logger.info({"status": "listed studio apps", "response": list_response})
         running_apps = [
             app
             for app in list_response.get("Apps")
             if app["Status"] in ["In-Service", "Deleting"]
         ]
         if running_apps:
-            logger.info("apps still running, trying to delete apps...")
+            logger.info({"status": "deleting studio apps"})
             delete_studio_apps(list_response)
             return {"IsComplete": False}
 
         else:
-            logger.info("all running apps deleted, moving on to deleting user profile")
+            logger.info({"status": "deleted all studio apps"})
+            logger.info({"status": "deleting user profile"})
             sm_client.delete_user_profile(
                 DomainId=domain_id, UserProfileName=user_profile_name
             )
-            logger.info("explicitly deleted user profile")
-    except:
-        logger.exception("failed to list studio apps")
+            logger.info({"status": "deleted user profile"})
+    except Exception as e:
+        logger.exception(
+            {
+                "status": "failed to list studio apps or to delete user profiles",
+                "exception": e,
+            }
+        )
         return {"IsComplete": False}
     return {"IsComplete": True}
 

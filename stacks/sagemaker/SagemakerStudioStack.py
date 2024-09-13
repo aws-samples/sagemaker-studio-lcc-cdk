@@ -68,6 +68,27 @@ class SagemakerStudioStack(cdk.Stack):
                 ],
             )
 
+            sagemaker.CfnSpace(
+                self,
+                f"space-{profile.user_profile_name}",
+                domain_id=domain.attr_domain_id,
+                space_name=f"space-{profile.user_profile_name}",
+                ownership_settings=sagemaker.CfnSpace.OwnershipSettingsProperty(
+                    owner_user_profile_name=profile.user_profile_name
+                ),
+                space_settings=sagemaker.CfnSpace.SpaceSettingsProperty(
+                    app_type="JupyterLab",
+                    jupyter_lab_app_settings=sagemaker.CfnSpace.SpaceJupyterLabAppSettingsProperty(
+                        default_resource_spec=sagemaker.CfnSpace.ResourceSpecProperty(
+                            instance_type="ml.t3.medium"
+                        ),
+                    ),
+                ),
+                space_sharing_settings=sagemaker.CfnSpace.SpaceSharingSettingsProperty(
+                    sharing_type="Private"
+                ),
+            ).node.add_dependency(profile)
+
             CustomResources.StudioAppCustomResource(
                 self,
                 f"{user_profile_name}-studio-cr",
@@ -75,17 +96,17 @@ class SagemakerStudioStack(cdk.Stack):
                 domain_id=domain.attr_domain_id,
             ).node.add_dependency(profile)
 
-        CustomResources.InstallPackagesCustomResource(
+        cr_install_packages = CustomResources.InstallPackagesCustomResource(
             self,
             "install-packages-construct",
             domain_id=domain.attr_domain_id,
         )
 
-        CustomResources.ShutDownIdleKernelsCustomResource(
+        CustomResources.ShutDownIdleAppsCustomResource(
             self,
-            "shut-down-idle-kernels-construct",
+            "shut-down-idle-apps-construct",
             domain_id=domain.attr_domain_id,
-        )
+        ).node.add_dependency(cr_install_packages)
 
         CustomResources.EfsCustomResource(
             self,

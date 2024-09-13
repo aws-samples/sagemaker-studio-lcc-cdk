@@ -7,8 +7,8 @@ from stacks.sagemaker.constructs.custom_resources.EfsCustomResource import (
 from stacks.sagemaker.constructs.custom_resources.StudioAppCustomResource import (
     StudioAppCustomResource,
 )
-from stacks.sagemaker.constructs.custom_resources.ShutDownIdleKernelsCustomResource import (
-    ShutDownIdleKernelsCustomResource,
+from stacks.sagemaker.constructs.custom_resources.ShutDownIdleAppsCustomResource import (
+    ShutDownIdleAppsCustomResource,
 )
 from stacks.sagemaker.constructs.custom_resources.InstallPackagesCustomResource import (
     InstallPackagesCustomResource,
