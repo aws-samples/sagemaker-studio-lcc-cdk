@@ -53,6 +53,7 @@ class SagemakerStudioStack(cdk.Stack):
 
         for user_id in user_ids:
             user_profile_name = f"{workspace_id}-{user_id.lower()}"
+            space_name = f"space-{user_profile_name}"
 
             profile = sagemaker.CfnUserProfile(
                 self,
@@ -70,9 +71,9 @@ class SagemakerStudioStack(cdk.Stack):
 
             sagemaker.CfnSpace(
                 self,
-                f"space-{profile.user_profile_name}",
+                space_name,
                 domain_id=domain.attr_domain_id,
-                space_name=f"space-{profile.user_profile_name}",
+                space_name=space_name,
                 ownership_settings=sagemaker.CfnSpace.OwnershipSettingsProperty(
                     owner_user_profile_name=profile.user_profile_name
                 ),
@@ -94,6 +95,7 @@ class SagemakerStudioStack(cdk.Stack):
                 f"{user_profile_name}-studio-cr",
                 user_profile_name=user_profile_name,
                 domain_id=domain.attr_domain_id,
+                space_name=space_name,
             ).node.add_dependency(profile)
 
         cr_install_packages = CustomResources.InstallPackagesCustomResource(

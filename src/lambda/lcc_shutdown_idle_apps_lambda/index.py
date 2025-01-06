@@ -126,7 +126,7 @@ def on_delete(app_shutdown_lifecycle_config: str, physical_resource_id: str):
         )
         return {"Status": "SUCCESS", "PhysicalResourceId": physical_resource_id}
 
-    except:
+    except Exception as e:
         logger.exception(
             {"status": "failed to delete lifecycle config", "exception": e}
         )
