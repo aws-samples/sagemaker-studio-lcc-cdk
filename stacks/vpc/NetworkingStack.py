@@ -61,12 +61,6 @@ class NetworkingStack(cdk.Stack):
             "Allow TCP traffic to EFS",
         )
 
-        security_group.add_ingress_rule(
-            ec2.Peer.ipv4(vpc.vpc_cidr_block),
-            ec2.Port.tcp_range(8192, 65535),
-            "Allow TCP traffic between the Jupyter Server application and the Kernel Gateway applications",
-        )
-
         self.security_group_id = security_group.security_group_id
         self.vpc_id = vpc.vpc_id
         self.subnet_ids = [subnet.subnet_id for subnet in vpc.private_subnets]

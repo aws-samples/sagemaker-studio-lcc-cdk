@@ -41,6 +41,7 @@ class StudioUserRole(iam.Role):
                                 "sagemaker:Stop*",
                                 "sagemaker:Update*",
                                 "sagemaker:Start*",
+                                "sagemaker:Create*",
                                 "sagemaker:DisassociateTrialComponent",
                                 "sagemaker:AssociateTrialComponent",
                                 "sagemaker:BatchPutMetrics",

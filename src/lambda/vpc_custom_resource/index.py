@@ -31,13 +31,14 @@ def on_create():
         result (json): status
     """
 
-    logger.info("create resource not implemented")
+    logger.info({"status": "create resource not needed for vpc custom resource"})
 
     return {"Status": "SUCCESS"}
 
 
 def is_create_complete():
-    logger.info("calling is_create_complete")
+
+    logger.info({"status": "calling is_create_complete"})
     return {"IsComplete": True}
 
 
@@ -50,19 +51,19 @@ def on_update():
         result (json): status
     """
 
-    logger.info("update resource not implemented")
+    logger.info({"status": "update resource not needed for vpc custom resource"})
 
     return {"Status": "SUCCESS"}
 
 
 def is_update_complete():
-    logger.info("calling is_update_complete")
+    logger.info({"status": "calling is_update_complete"})
     return {"IsComplete": True}
 
 
 def on_delete(vpc_id: str, physical_resource_id: str):
     """Function to execute when deleting the custom resource"""
-    logger.info("delete resource")
+    logger.info({"status": "deleting vpc custom resource"})
 
     nfs_sgs = []
     try:
@@ -94,15 +95,15 @@ def on_delete(vpc_id: str, physical_resource_id: str):
                 else:
                     ec2_client.delete_security_group(GroupId=sg.get("GroupId"))
 
-            logger.info(f"deleted sg: {sg}")
+            logger.info({"status": f"deleted sg: {sg}"})
 
         # delete nfs inbound sg at the end
         for nfs_sg in nfs_sgs:
             ec2_client.delete_security_group(GroupId=nfs_sg.get("GroupId"))
-            logger.info(f"deleted nsf inbound sg: {nfs_sg}")
+            logger.info({"status": f"deleted nsf inbound sg: {nfs_sg}"})
 
     except Exception as e:
-        logger.exception("failed to delete sgs")
+        logger.exception({"status": "failed to delete sgs", "exception": e})
         return {
             "Status": "FAILED",
             "PhysicalResourceId": physical_resource_id,
@@ -112,7 +113,7 @@ def on_delete(vpc_id: str, physical_resource_id: str):
 
 
 def is_delete_complete(vpc_id: str):
-    logger.info("calling is_delete_complete")
+    logger.info({"status": "calling is_delete_complete"})
     resp = on_delete(vpc_id, "")
     if resp.get("Status") == "SUCCESS":
         return {"IsComplete": True}

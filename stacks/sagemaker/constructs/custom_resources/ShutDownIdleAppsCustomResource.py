@@ -5,7 +5,7 @@ from constructs import Construct
 from stacks.sagemaker.constructs.custom_resources import CustomResource
 
 
-class ShutDownIdleKernelsCustomResource(CustomResource):
+class ShutDownIdleAppsCustomResource(CustomResource):
     def __init__(
         self,
         scope: Construct,
@@ -17,9 +17,9 @@ class ShutDownIdleKernelsCustomResource(CustomResource):
             construct_id,
             properties={
                 "domain_id": domain_id,
-                "kernel_shutdown_lifecycle_config": f"{domain_id}-kernel-shutdown-lifecycle-config",
+                "app_shutdown_lifecycle_config": f"{domain_id}-apps-shutdown-lifecycle-config",
             },
-            lambda_file_name="lcc_shutdown_idle_kernels_lambda",
+            lambda_file_name="lcc_shutdown_idle_apps_lambda",
             iam_policy=iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=[
